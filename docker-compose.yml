@@ -1,0 +1,28 @@
+version: "3.8"
+
+services:
+    master:
+        image: mavros
+        command: roscore
+        restart: always
+
+    mavros-node:
+        image: mavros
+        depends_on:
+            - master
+        environment:
+            - "ROS_MASTER_URI=http://master:11311"
+            # - "ROS_HOSTNAME=talker"
+        command: roslaunch mavros apm.launch fcu_url:=udp://0.0.0.0:14550@
+        restart: always
+
+    mavros-state:
+        image: mavros
+        depends_on:
+            - master
+            - mavros-node
+        environment:
+            - "ROS_MASTER_URI=http://master:11311"
+            # - "ROS_HOSTNAME=listener"
+        command: rostopic echo /mavros/state
+        restart: always
