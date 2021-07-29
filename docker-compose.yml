@@ -1,8 +1,15 @@
+# http://wiki.ros.org/docker/Tutorials/Compose
+
 version: "3.8"
+
+networks:
+    ros:
 
 services:
     master:
         image: mavros
+        networks:
+            - ros
         command: roscore
         restart: always
 
@@ -13,6 +20,10 @@ services:
         environment:
             - "ROS_MASTER_URI=http://master:11311"
             # - "ROS_HOSTNAME=talker"
+        networks:
+            - ros
+        ports:
+            - "14550:14550/udp"
         command: roslaunch mavros apm.launch fcu_url:=udp://0.0.0.0:14550@
         restart: always
 
@@ -24,5 +35,7 @@ services:
         environment:
             - "ROS_MASTER_URI=http://master:11311"
             # - "ROS_HOSTNAME=listener"
+        networks:
+            - ros
         command: rostopic echo /mavros/state
         restart: always

@@ -1,7 +1,8 @@
 # INSTRUCTIONS:
 # Run `docker pull ros:noetic-robot` in the command line.
-# Run `docker build -t mavros .` (in the same folder as this Dockerfile)
-# Run `docker run -it --rm -P ros`
+# Run `docker build -t mavros -f mavros.Dockerfile .` (in the same folder as this Dockerfile)
+# Run `docker run -it --rm -P mavros` to launch an isolated container.
+# Run `docker run -it --rm -P --network kno_ros --env ROS_MASTER_URI=http://master:11311 mavros` to launch a container connected to the Docker Compose network of containers.
 #
 # See http://wiki.ros.org/docker/Tutorials/Docker for more details.
 # This Dockerfile is based on https://hub.docker.com/r/droneemployee/developer/dockerfile.
