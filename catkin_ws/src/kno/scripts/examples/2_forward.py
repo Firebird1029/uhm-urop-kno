@@ -4,11 +4,15 @@ from __future__ import print_function
 
 import rospy
 from kno.msg import RauvMotion
-from kno.srv import RauvSimpleCmd
+from kno.srv import RauvSimpleCmd, RauvMode
 
 
 def forward():
     rospy.init_node("rauv_ex_2_forward", anonymous=True)
+
+    rospy.ServiceProxy("/rauv/init", RauvSimpleCmd)()
+
+    rospy.ServiceProxy("/rauv/mode", RauvMode)("MANUAL")
 
     rospy.ServiceProxy("/rauv/arm", RauvSimpleCmd)()
 

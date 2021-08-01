@@ -9,6 +9,8 @@ from kno.srv import RauvSimpleCmd
 def arm():
     rospy.init_node("rauv_ex_1_arm", anonymous=True)
 
+    rospy.ServiceProxy("/rauv/init", RauvSimpleCmd)()
+
     rospy.ServiceProxy("/rauv/arm", RauvSimpleCmd)()
 
 

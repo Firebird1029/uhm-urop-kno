@@ -3,11 +3,10 @@
 from __future__ import print_function
 
 import rospy
-from mavros_msgs.msg import OverrideRCIn
-from mavros_msgs.srv import CommandBool, WaypointClear
+from mavros_msgs.msg import OverrideRCIn, ParamValue
+from mavros_msgs.srv import CommandBool, WaypointClear, SetMode, ParamGet, ParamSet
 from kno.msg import RauvMotion
-from kno.srv import RauvSimpleCmd, RauvSimpleCmdResponse
-from set_sysid_param import setSysIdParam
+from kno.srv import RauvSimpleCmd, RauvSimpleCmdResponse, RauvMode, RauvModeResponse
 
 
 def handleInitCall(req):
@@ -15,7 +14,11 @@ def handleInitCall(req):
 
     try:
         # set the SYSID_MYGCS MAVLink parameter to 1 to allow ROS to control the RAUV.
-        setSysIdParam(1)
+        rospy.ServiceProxy("/mavros/param/get", ParamGet)("SYSID_MYGCS")
+        rospy.ServiceProxy("/mavros/param/set", ParamSet)("SYSID_MYGCS", ParamValue(1, 0.0))
+
+        res = rospy.ServiceProxy("/mavros/param/get", ParamGet)("SYSID_MYGCS")
+        rospy.loginfo("SYSID_MYGCS set to: %s" % res.value.integer)
 
         # clear waypoints
         rospy.ServiceProxy("/mavros/mission/clear", WaypointClear)()
@@ -27,10 +30,11 @@ def handleInitCall(req):
 
 
 def handleArmCall(req):
-    rospy.loginfo("Arming RAUV.")
+    rospy.logdebug("Arming RAUV.")
     rospy.wait_for_service("/mavros/cmd/arming")
     try:
         res = rospy.ServiceProxy("/mavros/cmd/arming", CommandBool)(True)
+        rospy.loginfo("RAUV armed successfully.")
         return RauvSimpleCmdResponse(True)
     except rospy.ServiceException as e:
         rospy.logerr("Service call failed: %s" % e)
@@ -38,14 +42,30 @@ def handleArmCall(req):
 
 
 def handleDisarmCall(req):
-    rospy.loginfo("Disarming RAUV.")
+    rospy.logdebug("Disarming RAUV.")
     rospy.wait_for_service("/mavros/cmd/arming")
     try:
         res = rospy.ServiceProxy("/mavros/cmd/arming", CommandBool)(False)
+        rospy.loginfo("RAUV disarmed successfully.")
         return RauvSimpleCmdResponse(True)
     except rospy.ServiceException as e:
         rospy.logerr("Service call failed: %s" % e)
         return RauvSimpleCmdResponse(False)
+
+
+def handleModeCall(req):
+    rospy.logdebug("Changing RAUV flight mode to %s." % req.mode)
+    rospy.wait_for_service("/mavros/set_mode")
+    try:
+        res = rospy.ServiceProxy("/mavros/set_mode", SetMode)(custom_mode=req.mode)
+        if not res.mode_sent:
+            rospy.logwarn("RAUV flight mode change error! Failed to set flight mode to %s." % req.mode)
+            return RauvModeResponse(False)
+        rospy.loginfo("RAUV flight mode successfully changed to %s." % req.mode)
+        return RauvModeResponse(True)
+    except rospy.ServiceException as e:
+        rospy.logerr("Service call failed: %s" % e)
+        return RauvModeResponse(False)
 
 
 def handleMotionMsg(msg):
@@ -57,7 +77,7 @@ def handleMotionMsg(msg):
     for i, c in enumerate(channels):
         if c < 0:
             channels[i] = 65535
-    print(channels)
+    rospy.logdebug(channels)
 
     pub.publish(channels=channels)
 
@@ -67,6 +87,7 @@ def rauv_server():
     initService = rospy.Service("rauv/init", RauvSimpleCmd, handleInitCall)
     armService = rospy.Service("rauv/arm", RauvSimpleCmd, handleArmCall)
     disarmService = rospy.Service("rauv/disarm", RauvSimpleCmd, handleDisarmCall)
+    modeService = rospy.Service("rauv/mode", RauvMode, handleModeCall)
 
     motionSubscription = rospy.Subscriber("rauv/motion", RauvMotion, handleMotionMsg)
     rospy.loginfo("RAUV node ready.")
