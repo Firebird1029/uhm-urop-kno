@@ -8,5 +8,17 @@
 		"/root/catkin_ws/devel/lib/python2.7/dist-packages",
 		"/opt/ros/melodic/lib/python2.7/dist-packages"
 	],
-	"ros.distro": "melodic"
+	"ros.distro": "melodic",
+	"emeraldwalk.runonsave": {
+		"commands": [
+			{
+				"match": ".py",
+				"cmd": "cd ~/catkin_ws && catkin_make"
+			},
+			{
+				"match": ".txt",
+				"cmd": "cd ~/catkin_ws && catkin_make"
+			}
+		]
+	}
 }
