@@ -2,10 +2,11 @@
 
 from __future__ import print_function
 
-from kno.srv import RauvSimpleCmd, RauvSimpleCmdResponse
 import rospy
 from mavros_msgs.msg import OverrideRCIn
 from mavros_msgs.srv import CommandBool
+from kno.msg import RauvMotion
+from kno.srv import RauvSimpleCmd, RauvSimpleCmdResponse
 from set_sysid_param import setSysIdParam
 
 
@@ -43,14 +44,18 @@ def handleDisarmCall(req):
         return RauvSimpleCmdResponse(False)
 
 
-def handleMotionCall():
+def handleMotionMsg(msg):
     pub = rospy.Publisher("/mavros/rc/override", OverrideRCIn, queue_size=10)
-    rate = rospy.Rate(1)  # 10hz
-    while not rospy.is_shutdown():
-        channels = [1500, 1500, 1500, 1500, 1900, 1500, 1500, 1500]
-        rospy.loginfo(channels)
-        pub.publish(channels=channels)
-        rate.sleep()
+    # -1 for no change, 0 for release --> 65535 for no change, 0 for release
+    channels = [msg.pitch, msg.roll, msg.throttle,
+                msg.yaw, msg.forward, msg.lateral,
+                msg.pan, msg.tilt]
+    for i, c in enumerate(channels):
+        if c < 0:
+            channels[i] = 65535
+    print(channels)
+
+    pub.publish(channels=channels)
 
 
 def rauv_server():
@@ -58,9 +63,14 @@ def rauv_server():
     initService = rospy.Service("rauv/init", RauvSimpleCmd, handleInitCall)
     armService = rospy.Service("rauv/arm", RauvSimpleCmd, handleArmCall)
     disarmService = rospy.Service("rauv/disarm", RauvSimpleCmd, handleDisarmCall)
+
+    motionSubscription = rospy.Subscriber("rauv/motion", RauvMotion, handleMotionMsg)
     rospy.loginfo("RAUV node ready.")
     rospy.spin()
 
 
 if __name__ == "__main__":
-    rauv_server()
+    try:
+        rauv_server()
+    except rospy.ROSInterruptException:
+        pass
