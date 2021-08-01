@@ -49,3 +49,9 @@ qtcreator-*
 
 # Catkin custom files
 CATKIN_IGNORE
+
+# MAVProxy
+mav.parm
+mav.tlog
+mav.tlog.raw
+way.txt
