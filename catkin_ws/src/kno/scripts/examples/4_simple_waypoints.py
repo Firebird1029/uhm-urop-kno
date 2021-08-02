@@ -83,8 +83,6 @@ def simpleWaypoints():
 
     rospy.ServiceProxy("/rauv/init", RauvSimpleCmd)()
 
-    rospy.ServiceProxy("/rauv/mode", RauvMode)("AUTO")
-
     rospy.ServiceProxy("/rauv/arm", RauvSimpleCmd)()
 
     waypoints = convertQGCPlanToWaypoints(items)
@@ -92,8 +90,10 @@ def simpleWaypoints():
 
     try:
         rospy.ServiceProxy("/mavros/mission/clear", WaypointClear)()
-        res = rospy.ServiceProxy("/mavros/mission/push", WaypointPush)(waypoints=waypoints)
+        rospy.ServiceProxy("/mavros/mission/push", WaypointPush)(waypoints=waypoints)
         rospy.ServiceProxy("/mavros/mission/set_current", WaypointSetCurrent)(wp_seq=0)
+
+        rospy.ServiceProxy("/rauv/mode", RauvMode)("AUTO")
     except rospy.ServiceException as e:
         rospy.logerror(e)
 
