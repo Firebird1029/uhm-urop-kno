@@ -55,3 +55,6 @@ mav.parm
 mav.tlog
 mav.tlog.raw
 way.txt
+
+# Other
+**/.DS_Store
