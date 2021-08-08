@@ -1,7 +1,5 @@
 # ROS Installation
 
-This code uses **ROS 1, Melodic** (supported May 2018 – May 2023 EOL). This version of ROS runs on **Ubuntu 18.04 Bionic Beaver**.
-
 ## 1. Install Ubuntu
 
 Install Ubuntu on the relevant hardware platform.
@@ -10,7 +8,12 @@ Install Ubuntu on the relevant hardware platform.
 
 Follow these steps: <https://developer.nvidia.com/embedded/learn/get-started-jetson-xavier-nx-devkit>. More NVIDIA resources can be found here: <https://developer.nvidia.com/embedded/downloads>. As of July 2021, the NVIDIA image for Xavier NX includes Ubuntu 18.04.
 
-### 1.2 For AWS EC2 Instance
+### 1.2 For Mac/Windows
+
+1. Follow this tutorial: <http://wiki.ros.org/docker/Tutorials/Docker>.
+   1. Make sure to run `docker pull ros:melodic-robot` and not `docker pull ros:noetic-robot`
+
+### 1.3 For AWS EC2 Instance
 
 These steps assume you already have an AWS account, know how to launch an EC2 instance and edit the security group associated with an EC2 instance, and know how to connect to a remote computer using RDP.
 
@@ -29,11 +32,6 @@ These steps assume you already have an AWS account, know how to launch an EC2 in
 10. Highly recommended: Fix xrdp speed issues as described here: <https://superuser.com/questions/1539900/slow-ubuntu-remote-desktop-using-xrdp>. Otherwise RDP will be extremely slow.
 11. Exit SSH and connect to the EC2 instance from a RDP client.
 
-### 1.3 For Mac
-
-1. Follow this tutorial: <http://wiki.ros.org/docker/Tutorials/Docker>.
-   1. Make sure to run `docker pull ros:melodic-robot` and not `docker pull ros:noetic-robot`
-
 ## 2. Install ROS and mavros
 
 ### 2.1 For Ubuntu (Jetson Xavier NX, AWS EC2 Ubuntu)
@@ -41,7 +39,7 @@ These steps assume you already have an AWS account, know how to launch an EC2 in
 1. Follow the official ROS installation guide: <http://wiki.ros.org/melodic/Installation/Ubuntu>.
 2. Follow the mavros documentation installation guide: <https://github.com/mavlink/mavros/blob/master/mavros/README.md#installation>. Make sure to replace `kinetic` with `melodic`.
 
-### 2.2 For Mac
+### 2.2 For Mac/Windows
 
 #### 2.2.1 mavros.Dockerfile
 
@@ -79,16 +77,22 @@ Some dependencies of ArduPilot don't support ARM so you might encounter issues d
 1. Follow steps for x86-based Ubuntu, but:
 2. When installing ArduPilot, instead of `Tools/environment_install/install-prereqs-ubuntu.sh -y`, run `SKIP_AP_EXT_ENV ./Tools/environment_install/install-prereqs-ubuntu.sh -y`. This undocumented flag will skip pygame due to a Python version compatibility issue.
 
-### 3.3 For x86-Based Mac (Pre-2020)
+### 3.3 For x86-Based Windows
+
+See the official ArduPilot Vagrant documentation for more details: <https://ardupilot.org/dev/docs/setting-up-sitl-using-vagrant.html>.
+
+### 3.4 For x86-Based Mac (Pre-2020)
 
 1. Install XQuartz, Vagrant, and VirtualBox.
 2. Follow this tutorial: <https://gist.github.com/drnic/7684ce449ef5cfa965166ddd907dd36a>.
+3. See the official ArduPilot Vagrant documentation for more details: <https://ardupilot.org/dev/docs/setting-up-sitl-using-vagrant.html>.
 
-### 3.4 For ARM-Based Mac (Apple Silicon)
+### 3.5 For ARM-Based Mac (Apple Silicon)
 
-VirtualBox does not support Apple Silicon (and may never). You may try Parallels with [vagrant-parallels](https://github.com/Parallels/vagrant-parallels), but Parallels is not open-source and requires a paid subscription. In conclusion, it is currently not possible/practical to run a Linux-based graphical SITL on Apple Silicon.
+VirtualBox does not support Apple Silicon (and may choose to not support it in the future). You may try Parallels with [vagrant-parallels](https://github.com/Parallels/vagrant-parallels), but Parallels is not open-source and requires a paid subscription. In conclusion, it is currently complicated/impossible to run the Linux-based graphical SITL on Apple Silicon.
 
 ## 4. Other Notes
 
 - If `sim_vehicle.py` returns "command not found" then run `source ~/.profile`.
 - Note that QGroundControl cannot be installed on the Jetson Xavier NX because there is no ARM support for QGroundControl or its dependencies (specifically Qt).
+- As of August 2021, these installation steps have been confirmed to work on the Jetson Xavier NX, AWS, and Mac, but not on Windows.
